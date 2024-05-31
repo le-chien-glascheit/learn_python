@@ -24,8 +24,8 @@ def load_posts() -> list[Post]:
 if __name__ == '__main__':
     # post = Post('Just post', 'saved post')
     # save_post(post)
-    posts = load_posts()
-    print(*posts, sep='\n')
+    # posts = load_posts()
+    # print(*posts, sep='\n')
     # a = ['bobik', '2', 'dog']
     # b = '//'.join(a)
     # print(type(b))
