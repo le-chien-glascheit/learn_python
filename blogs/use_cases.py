@@ -1,5 +1,5 @@
-from models import Blog, Post
-from repository import save_post
+from blogs.models import Blog, Post
+from blogs.repository import save_post
 
 
 def create_new_post(blog: Blog, title: str, text: str):

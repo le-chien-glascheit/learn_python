@@ -1,4 +1,4 @@
-from models import Post
+from blogs.models import Post
 
 SEPARATOR = ';'
 
@@ -22,6 +22,7 @@ def load_posts() -> list[Post]:
 
 
 if __name__ == '__main__':
+    pass
     # post = Post('Just post', 'saved post')
     # save_post(post)
     # posts = load_posts()
