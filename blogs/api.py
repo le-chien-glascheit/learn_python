@@ -1,119 +1,101 @@
-import random
 from uuid import UUID, uuid4
-from pydantic import BaseModel, Field
-from fastapi import FastAPI
+from pydantic import BaseModel, EmailStr
+from fastapi import FastAPI, HTTPException
+from fastapi.responses import RedirectResponse
 
-from blogs.cli import blog
-from blogs.use_cases import  create_new_post, print_posts
- #   from use_cases import print_posts, create_new_post
- #  ModuleNotFoundError: No module named 'use_cases'
+from blogs.models import Blog
+from blogs.use_cases import create_new_post, print_posts
+
+hello = """
+HI,dear user на этом познания английского заканчиваються
+
+Если хотите создать пост допишите /create
+
+Если хотите посмотреть посты допешите /posts
+"""
 
 app = FastAPI(
-    title='Blog_api'
+    title='Blog_api',
+    description=hello,
 )
 
-
-helloy = (f'HI,dear user на этом познания английского заканчиваються\nЕсли хотите создать пост допишите /create\nЕсли хотите посмотреть посты допешите /posts \n')
-# странно но почему-то текст не начинаеться с новой строки... печаль
+blog = Blog(author='Ivan', email='Ivan@ivanov.com')
 
 
-class Blog2(BaseModel):
-    id: UUID = Field(default_factory=uuid4)
-    author: str = 'Василий'
-    email: str = 'vasya@mail.ru'
+class Post(BaseModel):
+    title: str
+    text: str
+
+
+class BlogOut(BaseModel):
+    author: str
+    email: EmailStr | None
+
+
+class BlogIn(BlogOut):
+    pass
 
 
 @app.get('/')
-def main_page() -> str:
-    return helloy
+def main_page() -> RedirectResponse:
+    return RedirectResponse('/docs')
 
 
-@app.get('/create')
-def create():
+@app.get('/test/{path_param}/id/{path_id}')
+def param_demo(
+        path_param: str,
+        path_id: str,
+        page: str,
+        query_id: int = 15,
+) -> dict:
+    return dict(
+        a=path_param,
+        b=path_id,
+        c=page,
+        d=query_id,
+    )
+
+
+@app.post('/post')
+def create(post: Post) -> None:
     create_new_post(
         blog=blog,
-        title=input('title? >'),
-        text=input('text? >'),
+        title=post.title,
+        text=post.text,
     )
-    return ...
 
 
-@app.get('/posts')
-def posts():
-    print_posts(blog)
-    return ...
-
-global_data = ''
-
-
+@app.get('/post')
+def get_posts() -> list[Post]:
+    return [
+        Post.model_validate(post, from_attributes=True)
+        for post in blog.get_all_posts()
+    ]
 
 
-def create():
-    create_new_post(
-        blog=blog,
-        title=input('title? >'),
-        text=input('text? >'),
-    )
-    return ...
-@app.post(
-    blog=blog,
-    title ='Введите пожалуйста название вашего поста',
-    text='Введите пожалуйста текст вашего поста',
-)
-def post_data(blog: Blog2) -> ...:
-    return ...
-# это одно и то же ?
+@app.get('/blog')
+def get_blog() -> BlogOut:
+    return BlogOut.model_validate(blog, from_attributes=True)
 
 
+@app.put('/blog')
+def put_blog(new_blog: BlogIn) -> BlogOut:
+    global blog
+    blog = new_blog
+    return BlogOut.model_validate(blog, from_attributes=True)
 
 
-#
-# import random
-# from uuid import UUID, uuid4
-#
-# from pydantic import BaseModel, Field
-#
-# from fastapi import FastAPI
-#
-# app = FastAPI(
-#     title='MySuperAPI',
-#     version='1.1.0'
-# )
-#
-#
-# @app.get('/')
-# def main_page() -> int:
-#     return random.randint(1, 15)
-#
-#
-# @app.get('/test')
-# def test_request() -> str:
-#     return 'Hello, Api!'
-#
-#
-# global_data = ''
-#
-#
-# class CatOut(BaseModel):
-#     id: UUID = Field(default_factory=uuid4)
-#     name: str
-#     age: float = 0
-#
-#
-# class Cat(BaseModel):
-#     name: str
-#     age: float = 0
-#
-#
-# @app.post(
-#     path='/data',
-#     name='Запостить дату',
-#     description='С помощью этого метода вы можете отправить строку на сервер',
-# )
-# def post_data(cat: Cat) -> CatOut:
-#     return CatOut.model_validate(cat, from_attributes=True)
-#
-#
-# @app.get('/data')
-# def post_data(s: int = 1) -> str:
-#     return global_data[:-s]
+@app.patch('/blog')
+def update_blog(
+        author: str | None = None,
+        email: str | None = None,
+) -> None:
+    if author is not None:
+        blog.author = author
+    if email is not None:
+        blog.email = email
+    if author is None and email is None:
+        raise HTTPException(
+            status_code=400,
+            detail='Обязательно автора или мыло'
+        )
