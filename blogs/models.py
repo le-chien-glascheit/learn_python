@@ -1,36 +1,60 @@
 from dataclasses import dataclass
+# from pydantic import BaseModel, EmailStr
+# from fastapi import FastAPI, HTTPException
+# from fastapi.responses import RedirectResponse
+from pydantic import BaseModel, EmailStr
+# from blogs.use_cases import create_new_post, print_posts
 
 
-@dataclass
-class Post:
+class Post(BaseModel):
     title: str
     text: str
 
 
-class Blog:
-    def __init__(
-            self,
-            author: str,
-            email: str,
-    ):
-        self.author = author
-        self.email = email
-        self._posts = []
+class Blog(BaseModel):
+    author: str
+    email: EmailStr
+    posts: list[Post]
 
-    def add_post(self, post: Post):
-        self._posts.append(post)
-
-    def get_all_posts(self):
-        return self._posts
 
 
 if __name__ == '__main__':
-    blog = Blog(author='Vlad', email='vlad@gaz.ru')
-    while True:
-        post = Post(
-            title=input('Название >'),
-            text=input('Текст >'),
-        )
-        blog.add_post(post)
-        for index, post in enumerate(blog.get_all_posts()):
-            print(f'Пост {index + 1}: {post}')
+    pass
+    # blog = Blog(author='Vlad', email='vlad@gaz.ru')
+    #
+    # create_new_post(
+    #     blog,
+    #     post = Post(title ='Самый первый пост', text = 'Сегодня вымешленный персонаж рассказыват о себе'
+    #                 )
+    # )
+    #
+    #
+
+
+
+
+
+
+
+
+
+
+#     def add_post(self, post: Post):
+#         self.posts.append(post)
+#
+#
+# def add_post(post: Post) -> None:
+#     blog.posts.append(post)
+#     with open('Post_data.json', 'w', encoding='utf-8') as file:
+#         file.write(blog.model_dump_json())
+#     # self._posts.append(post)
+#
+#
+#     blog.posts.append = add_post
+#
+# def get_all_posts() -> Blog:
+#     with open('Post_data.json', 'r', encoding='utf-8') as file:
+#         data = file.read()
+#     blog = Blog.model_validate_json(data)
+#     return blog
+#

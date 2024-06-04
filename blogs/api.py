@@ -1,10 +1,11 @@
+from contextlib import contextmanager, asynccontextmanager
 from uuid import UUID, uuid4
 from pydantic import BaseModel, EmailStr
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import RedirectResponse
 
 from blogs.models import Blog
-from blogs.use_cases import create_new_post, print_posts
+from blogs.use_cases import create_new_post, print_posts, load_blog
 
 hello = """
 HI,dear user на этом познания английского заканчиваються
@@ -14,8 +15,17 @@ HI,dear user на этом познания английского заканч�
 Если хотите посмотреть посты допешите /posts
 """
 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):  # noqa
+    global blog
+    blog = load_blog()
+    yield
+
+
 app = FastAPI(
     title='Blog_api',
+    lifespan=lifespan,
     description=hello,
 )
 
